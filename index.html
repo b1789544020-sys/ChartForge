@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChartForge · 图表生成器</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- ECharts（按需引入需要用到的图表类型） -->
+  <script src="vendor/echarts.min.js"></script>
+  <!-- SheetJS 用于解析 Excel -->
+  <script src="vendor/xlsx.full.min.js"></script>
+</head>
+<body>
+  <!-- ========== 顶部工具栏 ========== -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">📊</span>
+      <span class="title">ChartForge</span>
+      <span class="subtitle">智能图表生成器 · 可视化从数据到洞察</span>
+    </div>
+    <div class="topbar-right">
+      <button id="themeToggle" class="btn btn-ghost">🌙 暗色</button>
+      <button id="exportPNG" class="btn btn-primary">📷 PNG</button>
+      <button id="exportSVG" class="btn btn-secondary">🖼️ SVG</button>
+      <button id="exportClip" class="btn btn-secondary">📋 复制</button>
+      <button id="exportCSV" class="btn btn-secondary">📄 CSV</button>
+      <button id="saveTplBtn" class="btn btn-secondary">💾 保存为模板</button>
+    </div>
+  </header>
+
+  <!-- ========== 主布局 ========== -->
+  <main class="layout">
+    <!-- 左：数据/导入/字段映射/推荐 -->
+    <aside class="sidebar-left">
+      <!-- 1. 数据导入 -->
+      <section class="card">
+        <div class="card-head">
+          <h3>📥 数据导入</h3>
+        </div>
+        <div class="card-body">
+          <div id="dropZone" class="drop-zone">
+            <p>📂 拖入 CSV / Excel 文件</p>
+            <p class="muted small">或</p>
+            <div class="btn-row">
+              <button id="selectFileBtn" class="btn btn-primary small">选择文件</button>
+              <button id="pasteDataBtn" class="btn btn-secondary small">📋 粘贴数据</button>
+            </div>
+            <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display:none" />
+          </div>
+          <!-- Excel 多工作表选择器（导入含多个 sheet 的文件时才显示） -->
+          <div id="sheetPicker" class="sheet-picker" style="display:none"></div>
+          <!-- 粘贴区域 -->
+          <div id="pasteArea" class="paste-area" style="display:none">
+            <textarea id="pasteInput" placeholder="支持 CSV / TSV 文本（Tab 或逗号分隔）&#10;例如：&#10;月份,销售额,订单数&#10;1月,12000,200&#10;2月,15800,250"></textarea>
+            <div class="btn-row">
+              <button id="pasteConfirmBtn" class="btn btn-primary small">解析</button>
+              <button id="pasteCancelBtn" class="btn btn-ghost small">取消</button>
+            </div>
+          </div>
+          <!-- 示例数据 -->
+          <div class="sample-data-section">
+            <h4>🧪 内置示例数据</h4>
+            <div id="sampleDataList" class="sample-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. 字段映射 -->
+      <section class="card">
+        <div class="card-head">
+          <h3>🔀 字段映射</h3>
+          <span class="muted small">拖拽字段到下方轴位</span>
+        </div>
+        <div class="card-body">
+          <div id="fieldMapper" class="field-mapper"></div>
+        </div>
+      </section>
+
+      <!-- 3. 智能推荐 -->
+      <section class="card">
+        <div class="card-head">
+          <h3>💡 智能推荐</h3>
+        </div>
+        <div class="card-body">
+          <div id="advisorBar" class="advisor-bar"></div>
+          <div id="recommendPanel" class="recommend-panel"></div>
+        </div>
+      </section>
+    </aside>
+
+    <!-- 中：图表 + 表格 -->
+    <section class="main-area">
+      <!-- 图表类型选择 -->
+      <div class="card chart-types-card">
+        <div id="chartTypeSelector" class="chart-type-selector"></div>
+      </div>
+      <!-- 图表 -->
+      <div class="card chart-card">
+        <div id="mainChart" class="main-chart"></div>
+      </div>
+      <!-- 多图表联动区 -->
+      <div class="card">
+        <div class="card-head">
+          <h3>📊 多图表联动</h3>
+          <div id="dashboardControls" class="dashboard-controls"></div>
+        </div>
+        <div class="card-body">
+          <div id="dashboardArea" class="dashboard-area"></div>
+        </div>
+      </div>
+      <!-- 数据预览 -->
+      <div class="card">
+        <div class="card-head">
+          <h3>📋 数据预览</h3>
+        </div>
+        <div class="card-body">
+          <div id="dataTable" class="data-table-wrap"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 右：样式/模板 -->
+    <aside class="sidebar-right">
+      <section class="card">
+        <div class="card-head">
+          <h3>🎨 样式定制</h3>
+        </div>
+        <div class="card-body">
+          <div id="stylePanel" class="style-panel"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h3>💾 图表模板</h3>
+        </div>
+        <div class="card-body">
+          <div id="templateList" class="template-list"></div>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <!-- ========== 底部状态栏 ========== -->
+  <footer class="statusbar">
+    <span id="statusInfo">就绪</span>
+    <span class="muted small">当前图表：<span id="statusChart">-</span></span>
+    <span class="muted small">ChartForge · 数据清洗 → 可视化闭环</span>
+  </footer>
+
+  <!-- ========== Toast 容器 ========== -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ========== 应用脚本 ========== -->
+  <script src="js/utils.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/sample-data.js"></script>
+  <script src="js/datasource.js"></script>
+  <script src="js/recommend.js"></script>
+  <script src="js/advisor.js"></script>
+  <script src="js/importer.js"></script>
+  <script src="js/chart-renderer.js"></script>
+  <script src="js/data-table.js"></script>
+  <script src="js/field-mapper.js"></script>
+  <script src="js/template.js"></script>
+  <script src="js/chart-dashboard.js"></script>
+  <script src="js/exporter.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- 启动 -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      try {
+        App.init();
+        Utils.toast('ChartForge 已就绪', 'success');
+      } catch (e) {
+        console.error('Init failed:', e);
+        document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#c00;">启动失败：' + e.message + '</div>';
+      }
+    });
+  </script>
+</body>
+</html>

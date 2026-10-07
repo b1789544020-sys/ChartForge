@@ -1,0 +1,27 @@
+# --- 测试与诊断产物（每次运行重新生成，不入库）---
+tools/logs/
+tools/_artifacts/
+tools/__pycache__/
+*.pyc
+
+# --- 早期开发脚手架，已被 tools/diag.py 取代 ---
+# 保留在本地备查；确认不再需要可直接删除。
+tools/e2e_node.js
+tools/e2e_pw.py
+tools/e2e_py.py
+tools/e2e_output.txt
+tools/static_check.py
+tools/static_check2.py
+
+# --- 仅适用于原作者本机的一次性脚本（含绝对路径）---
+tools/cleanup_desktop.bat
+
+# --- 操作系统 / 编辑器 ---
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# ---- Secrets ----
+.env
